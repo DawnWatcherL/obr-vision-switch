@@ -72,10 +72,39 @@ async function change(on: boolean) {
   finally { busy = false; render(); }
 }
 OBR.onReady(async () => {
+ async function loadScene() {
   try {
-    if ((await OBR.player.getRole()) !== 'GM') { app.textContent = '此控制器仅供 GM 使用。'; return; }
-    if (!await OBR.scene.isReady()) { app.textContent = '请先打开场景。'; return; }
+    if (!await OBR.scene.isReady()) {
+      app.textContent = '正在等待 Owlbear 场景加载...';
+      return;
+    }
+
     await refresh();
-    OBR.scene.items.onChange(() => { if(!busy) void refresh(); });
-  } catch (e) { app.textContent = '初始化失败：' + String(e); }
+
+    if (!subscribed) {
+      subscribed = true;
+      OBR.scene.items.onChange(() => {
+        if (!busy) void refresh();
+      });
+    }
+  } catch (e) {
+    app.textContent = '场景加载失败：' + String(e);
+  }
+}
+
+OBR.onReady(async () => {
+  try {
+    if ((await OBR.player.getRole()) !== 'GM') {
+      app.textContent = '此控制器仅供 GM 使用。';
+      return;
+    }
+
+    OBR.scene.onReadyChange(() => {
+      void loadScene();
+    });
+
+    await loadScene();
+  } catch (e) {
+    app.textContent = '初始化失败：' + String(e);
+  }
 });
