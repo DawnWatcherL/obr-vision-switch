@@ -71,16 +71,15 @@ async function change(on: boolean) {
   } catch (e) { alert('修改失败：' + String(e)); }
   finally { busy = false; render(); }
 }
-OBR.onReady(async () => {
- async function loadScene() {
+let subscribed = false;
+
+async function loadScene() {
   try {
     if (!await OBR.scene.isReady()) {
       app.textContent = '正在等待 Owlbear 场景加载...';
       return;
     }
-
     await refresh();
-
     if (!subscribed) {
       subscribed = true;
       OBR.scene.items.onChange(() => {
@@ -98,11 +97,7 @@ OBR.onReady(async () => {
       app.textContent = '此控制器仅供 GM 使用。';
       return;
     }
-
-    OBR.scene.onReadyChange(() => {
-      void loadScene();
-    });
-
+    OBR.scene.onReadyChange(() => { void loadScene(); });
     await loadScene();
   } catch (e) {
     app.textContent = '初始化失败：' + String(e);
