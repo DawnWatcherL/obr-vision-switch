@@ -5,6 +5,7 @@ import './style.css';
 const VISION = 'com.battle-system.smoke/visionRange';
 const DARK = 'com.battle-system.smoke/visionDark';
 const HAS = 'com.battle-system.smoke/hasVision';
+// Some Smoke tokens store ranges as numeric strings (e.g. '30').
 const BACKUP = 'wow.vision-switch/originalRange';
 const OPTED = 'wow.vision-switch/managed';
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -13,7 +14,16 @@ let selected = new Set<string>();
 let busy = false;
 let night = false;
 
-const n = (v: unknown): number | null => typeof v === 'number' && Number.isFinite(v) ? v : null;
+const n = (v: unknown): number | null => {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (typeof v === 'string' && v.trim() !== '') {
+    const parsed = Number(v);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+// Preserve Smoke & Spectre's original value type (number or numeric string).
+const zeroLike = (v: unknown): number | string => typeof v === 'string' ? '0' : 0;
 const esc = (s: string) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 function eligible(item: Item): boolean {
   return n(item.metadata[VISION]) !== null && item.metadata[HAS] === true;
@@ -55,14 +65,14 @@ async function change(on: boolean) {
         const original = n(item.metadata[BACKUP]);
         if (on) {
           if (original !== null) {
-            item.metadata[VISION] = original;
+            item.metadata[VISION] = item.metadata[BACKUP] as number | string;
             delete item.metadata[BACKUP];
             delete item.metadata[OPTED];
           }
         } else {
           const current = n(item.metadata[VISION]);
-          if (original === null && current !== null) item.metadata[BACKUP] = current;
-          item.metadata[VISION] = 0;
+          if (original === null && current !== null) item.metadata[BACKUP] = item.metadata[VISION];
+          item.metadata[VISION] = zeroLike(item.metadata[VISION]);
           item.metadata[OPTED] = true;
         }
       }
