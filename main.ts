@@ -16,7 +16,7 @@ let night = false;
 const n = (v: unknown): number | null => typeof v === 'number' && Number.isFinite(v) ? v : null;
 const esc = (s: string) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 function eligible(item: Item): boolean {
-  return item.layer === 'CHARACTER' && item.metadata[HAS] === true && n(item.metadata[VISION]) !== null;
+  return n(item.metadata[VISION]) !== null && item.metadata[HAS] === true;
 }
 async function refresh() {
   items = (await OBR.scene.items.getItems()).filter(eligible);
@@ -35,9 +35,9 @@ function render() {
   app.innerHTML = `<h2>☀️ / 🌙 视野开关</h2><p class="sub">只修改所选角色的普通视野，黑暗视觉不变。</p>
     <div class="state">${night?'检测到已关闭普通视野的角色':'当前没有由本扩展关闭视野的角色'}</div>
     <div class="actions"><button id="off" ${busy?'disabled':''}>🌙 关灯</button><button id="on" ${busy?'disabled':''}>☀️ 开灯</button></div>
-    <div class="toolbar"><strong>选择需要控制的玩家角色</strong><button id="reload">刷新</button></div>
-    <p class="sub">为避免误改怪物，默认不选中任何 Token。请勾选你的玩家角色。</p>
-    <section>${rows || '<p>未找到已开启 Smoke 视野的 Character Token。</p>'}</section>
+    <div class="toolbar"><strong>选择需要控制的 Token</strong><button id="reload">刷新</button></div>
+    <p class="sub">显示所有启用了 Smoke 视野的 Token，不按图层或归属过滤；默认不选中任何 Token，请只勾选玩家角色。</p>
+    <section>${rows || '<p>未找到已开启 Smoke 视野的 Token。</p>'}</section>
     <p class="foot">保护：第一次关灯保存原值；重复关灯不会覆盖备份。开灯时只恢复本扩展保存过的角色。关闭/重开面板不会丢失备份。</p>`;
   app.querySelectorAll<HTMLInputElement>('input[data-id]').forEach(el => el.onchange = () => { if(el.checked) selected.add(el.dataset.id!); else selected.delete(el.dataset.id!); });
   app.querySelector<HTMLButtonElement>('#off')!.onclick = () => void change(false);
