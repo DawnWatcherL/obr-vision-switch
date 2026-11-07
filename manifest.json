@@ -2,5 +2,5 @@
  "name":"Vision Switch / 视野开关", "version":"0.1.0", "manifest_version":1,
  "author":"WoW Tabletop Project", "description":"GM-only light switch for Smoke & Spectre normal vision; preserves darkvision.",
  "icon":"./icon.svg",
- "action":{"title":"视野开关", "icon":"./icon.svg", "popover":"./index.html", "width":380, "height":580}
+ "action":{"title":"视野开关", "icon":"./icon.svg", "popover": "https://dawnwatcherl.github.io/obr-vision-switch/index.html", "width":380, "height":580}
 }
